@@ -1,5 +1,5 @@
-import PlaceholderPage from "@/components/PlaceholderPage";
+import TablesFloor from "@/components/dashboard/TablesFloor";
 
 export default function DashboardTablesPage() {
-  return <PlaceholderPage title="Tables" />;
+  return <TablesFloor />;
 }

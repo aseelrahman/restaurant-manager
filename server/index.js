@@ -2,7 +2,7 @@ import "dotenv/config";
 import cors from "cors";
 import express from "express";
 import { fromNodeHeaders } from "better-auth/node";
-import { MongoClient } from "mongodb";
+import { MongoClient, ObjectId } from "mongodb";
 import { getAuth } from "../client/lib/auth.js";
 
 const PORT = Number(process.env.PORT) || 4000;
@@ -44,6 +44,89 @@ function requireStaffOrAdmin(req, res, next) {
     return res.status(403).json({ ok: false, error: "Forbidden" });
   }
   next();
+}
+
+function requireAdmin(req, res, next) {
+  if (req.user?.role !== "admin") {
+    return res.status(403).json({ ok: false, error: "Forbidden" });
+  }
+  next();
+}
+
+const TABLE_STATUSES = ["available", "occupied", "reserved"];
+
+function mapTable(doc) {
+  return {
+    id: doc._id.toString(),
+    number: doc.number,
+    seats: doc.seats,
+    status: doc.status,
+  };
+}
+
+function isDuplicateKeyError(err) {
+  return err?.code === 11000;
+}
+
+function mapMenuItem(doc) {
+  return {
+    id: doc._id.toString(),
+    name: doc.name,
+    description: doc.description || "",
+    price: doc.price,
+    category: doc.category,
+    available: doc.available,
+    imageUrl: doc.imageUrl || null,
+  };
+}
+
+const RESERVATION_STATUSES = [
+  "pending",
+  "confirmed",
+  "seated",
+  "cancelled",
+  "no_show",
+];
+
+function userIdFromSession(user) {
+  const id = user?.id;
+  if (!id) return null;
+  if (ObjectId.isValid(id) && String(new ObjectId(id)) === id) {
+    return new ObjectId(id);
+  }
+  return id;
+}
+
+function mapReservation(doc) {
+  return {
+    id: doc._id.toString(),
+    userId: doc.userId ? doc.userId.toString() : null,
+    guestName: doc.guestName,
+    guestPhone: doc.guestPhone || null,
+    partySize: doc.partySize,
+    datetime:
+      doc.datetime instanceof Date
+        ? doc.datetime.toISOString()
+        : doc.datetime,
+    tableId: doc.tableId ? doc.tableId.toString() : null,
+    status: doc.status,
+    notes: doc.notes || null,
+    createdAt:
+      doc.createdAt instanceof Date
+        ? doc.createdAt.toISOString()
+        : doc.createdAt || null,
+    updatedAt:
+      doc.updatedAt instanceof Date
+        ? doc.updatedAt.toISOString()
+        : doc.updatedAt || null,
+  };
+}
+
+function parseReservationDatetime(value) {
+  if (value == null || value === "") return null;
+  const d = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(d.getTime())) return null;
+  return d;
 }
 
 function registerRoutes() {
@@ -88,6 +171,285 @@ function registerRoutes() {
       res.json({ ok: true, data: { message: "staff access ok" } });
     }
   );
+
+  // --- MENU ---
+  app.get("/api/menu", async (_req, res) => {
+    if (!db) {
+      return res
+        .status(503)
+        .json({ ok: false, error: "Database unavailable" });
+    }
+    try {
+      const docs = await db
+        .collection("menuItems")
+        .find({ available: true })
+        .sort({ category: 1, name: 1 })
+        .toArray();
+      res.json({ ok: true, data: docs.map(mapMenuItem) });
+    } catch {
+      res.status(500).json({ ok: false, error: "Failed to load menu" });
+    }
+  });
+
+  // --- TABLES ---
+  app.get("/api/tables", requireSession, async (req, res) => {
+    if (!db) {
+      return res
+        .status(503)
+        .json({ ok: false, error: "Database unavailable" });
+    }
+    try {
+      const role = req.user?.role || "customer";
+      const filter =
+        role === "staff" || role === "admin" ? {} : { status: "available" };
+      const docs = await db
+        .collection("tables")
+        .find(filter)
+        .sort({ number: 1 })
+        .toArray();
+      res.json({ ok: true, data: docs.map(mapTable) });
+    } catch {
+      res.status(500).json({ ok: false, error: "Failed to load tables" });
+    }
+  });
+
+  app.post(
+    "/api/tables",
+    requireSession,
+    requireAdmin,
+    async (req, res) => {
+      if (!db) {
+        return res
+          .status(503)
+          .json({ ok: false, error: "Database unavailable" });
+      }
+      const number = Number(req.body?.number);
+      const seats = Number(req.body?.seats);
+      if (!Number.isInteger(number) || number < 1) {
+        return res
+          .status(400)
+          .json({ ok: false, error: "Table number must be a positive integer" });
+      }
+      if (!Number.isInteger(seats) || seats < 1) {
+        return res
+          .status(400)
+          .json({ ok: false, error: "Seats must be a positive integer" });
+      }
+      try {
+        const result = await db.collection("tables").insertOne({
+          number,
+          seats,
+          status: "available",
+        });
+        const doc = await db
+          .collection("tables")
+          .findOne({ _id: result.insertedId });
+        res.status(201).json({ ok: true, data: mapTable(doc) });
+      } catch (err) {
+        if (isDuplicateKeyError(err)) {
+          return res
+            .status(409)
+            .json({ ok: false, error: "Table number already exists" });
+        }
+        res.status(500).json({ ok: false, error: "Failed to add table" });
+      }
+    }
+  );
+
+  app.patch(
+    "/api/tables/:id",
+    requireSession,
+    requireStaffOrAdmin,
+    async (req, res) => {
+      if (!db) {
+        return res
+          .status(503)
+          .json({ ok: false, error: "Database unavailable" });
+      }
+      let id;
+      try {
+        id = new ObjectId(req.params.id);
+      } catch {
+        return res.status(400).json({ ok: false, error: "Invalid table id" });
+      }
+      const status = String(req.body?.status || "").trim();
+      if (!TABLE_STATUSES.includes(status)) {
+        return res.status(400).json({
+          ok: false,
+          error: `Status must be one of: ${TABLE_STATUSES.join(", ")}`,
+        });
+      }
+      try {
+        const result = await db
+          .collection("tables")
+          .findOneAndUpdate(
+            { _id: id },
+            { $set: { status } },
+            { returnDocument: "after" }
+          );
+        if (!result) {
+          return res.status(404).json({ ok: false, error: "Table not found" });
+        }
+        res.json({ ok: true, data: mapTable(result) });
+      } catch {
+        res.status(500).json({ ok: false, error: "Failed to update table" });
+      }
+    }
+  );
+
+  // --- RESERVATIONS ---
+  app.get("/api/reservations", requireSession, async (req, res) => {
+    if (!db) {
+      return res
+        .status(503)
+        .json({ ok: false, error: "Database unavailable" });
+    }
+    const role = req.user?.role || "customer";
+    const filter =
+      role === "staff" || role === "admin"
+        ? {}
+        : { userId: userIdFromSession(req.user) };
+    try {
+      const docs = await db
+        .collection("reservations")
+        .find(filter)
+        .sort({ datetime: 1 })
+        .toArray();
+      res.json({ ok: true, data: docs.map(mapReservation) });
+    } catch {
+      res.status(500).json({ ok: false, error: "Failed to load reservations" });
+    }
+  });
+
+  app.post("/api/reservations", requireSession, async (req, res) => {
+    if (!db) {
+      return res
+        .status(503)
+        .json({ ok: false, error: "Database unavailable" });
+    }
+    const guestName = String(req.body?.guestName || "").trim();
+    const partySize = Number(req.body?.partySize);
+    const datetime = parseReservationDatetime(req.body?.datetime);
+    const guestPhone = String(req.body?.guestPhone || "").trim();
+    const notes = String(req.body?.notes || "").trim();
+
+    if (!guestName) {
+      return res
+        .status(400)
+        .json({ ok: false, error: "Guest name is required" });
+    }
+    if (!Number.isInteger(partySize) || partySize < 1) {
+      return res.status(400).json({
+        ok: false,
+        error: "Party size must be a positive integer",
+      });
+    }
+    if (!datetime) {
+      return res
+        .status(400)
+        .json({ ok: false, error: "Valid reservation date and time required" });
+    }
+    if (datetime.getTime() < Date.now()) {
+      return res.status(400).json({
+        ok: false,
+        error: "Reservation must be in the future",
+      });
+    }
+
+    const now = new Date();
+    const doc = {
+      userId: userIdFromSession(req.user),
+      guestName,
+      partySize,
+      datetime,
+      status: "pending",
+      createdAt: now,
+      updatedAt: now,
+    };
+    if (guestPhone) doc.guestPhone = guestPhone;
+    if (notes) doc.notes = notes;
+
+    try {
+      const result = await db.collection("reservations").insertOne(doc);
+      const inserted = await db
+        .collection("reservations")
+        .findOne({ _id: result.insertedId });
+      res.status(201).json({ ok: true, data: mapReservation(inserted) });
+    } catch {
+      res.status(500).json({ ok: false, error: "Failed to create reservation" });
+    }
+  });
+
+  app.patch("/api/reservations/:id", requireSession, async (req, res) => {
+    if (!db) {
+      return res
+        .status(503)
+        .json({ ok: false, error: "Database unavailable" });
+    }
+    let id;
+    try {
+      id = new ObjectId(req.params.id);
+    } catch {
+      return res
+        .status(400)
+        .json({ ok: false, error: "Invalid reservation id" });
+    }
+
+    const role = req.user?.role || "customer";
+    const nextStatus = String(req.body?.status || "").trim();
+
+    if (role !== "staff" && role !== "admin") {
+      if (nextStatus !== "cancelled") {
+        return res.status(403).json({
+          ok: false,
+          error: "Only staff can update reservation status",
+        });
+      }
+
+      try {
+        const existing = await db
+          .collection("reservations")
+          .findOne({ _id: id, userId: userIdFromSession(req.user) });
+        if (!existing) {
+          return res
+            .status(404)
+            .json({ ok: false, error: "Reservation not found" });
+        }
+        if (
+          existing.status !== "pending" &&
+          existing.status !== "confirmed"
+        ) {
+          return res.status(400).json({
+            ok: false,
+            error: "Only pending or confirmed reservations can be cancelled",
+          });
+        }
+
+        const result = await db.collection("reservations").findOneAndUpdate(
+          { _id: id },
+          { $set: { status: "cancelled", updatedAt: new Date() } },
+          { returnDocument: "after" }
+        );
+        res.json({ ok: true, data: mapReservation(result) });
+      } catch {
+        res
+          .status(500)
+          .json({ ok: false, error: "Failed to cancel reservation" });
+      }
+      return;
+    }
+
+    if (!RESERVATION_STATUSES.includes(nextStatus)) {
+      return res.status(400).json({
+        ok: false,
+        error: `Status must be one of: ${RESERVATION_STATUSES.join(", ")}`,
+      });
+    }
+    res.status(501).json({
+      ok: false,
+      error: "Staff reservation actions are not implemented yet",
+    });
+  });
 }
 
 async function start() {
@@ -96,6 +458,9 @@ async function start() {
     await client.connect();
     db = client.db(DB_NAME);
     await db.command({ ping: 1 });
+    await db
+      .collection("tables")
+      .createIndex({ number: 1 }, { unique: true });
     console.log(`MongoDB connected (${DB_NAME})`);
   } catch (err) {
     console.warn("MongoDB not connected:", err.message);

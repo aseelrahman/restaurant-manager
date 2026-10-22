@@ -14,3 +14,16 @@ export function parseDollarsToCents(value) {
   if (!Number.isFinite(num) || num < 0) return null;
   return Math.round(num * 100);
 }
+
+export function formatDateTime(iso) {
+  const d = iso instanceof Date ? iso : new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}

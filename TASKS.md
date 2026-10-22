@@ -24,10 +24,10 @@ Delivery batches group user stories for incremental releases. Finish batches in 
 | --- | --- | --- | --- |
 | **1** | Foundation | US-01 (T01) | done |
 | **2** | Auth + shell | US-02 (T02), US-03 (T03), US-04 (T04) | done |
-| **3** | Menu vertical slice | US-05 (T05), US-06 (T06) | todo |
-| **4** | Tables | US-07 (T07) | todo |
+| **3** | Menu vertical slice | US-05 (T05), US-06 (T06) | in_progress |
+| **4** | Tables | US-07 (T07) | done |
 | **5** | Orders | US-08 (T08), US-09 (T09), US-10 (T10) | todo |
-| **6** | Reservations | US-11 (T11), US-12 (T12) | todo |
+| **6** | Reservations | US-11 (T11), US-12 (T12) | in_progress |
 | **7** | Billing | US-13 (T13), US-14 (T14) | todo |
 | **8** | Staff | US-15 (T15) | todo |
 | **9** | Dashboard overview | US-16 (T16) | todo |
@@ -73,13 +73,13 @@ Delivery batches group user stories for incremental releases. Finish batches in 
 | US-02 | Sign up, sign in, roles | done |
 | US-03 | Shared shell (nav, API helper, cart lib) | done |
 | US-04 | Public home | done |
-| US-05 | Browse menu | todo |
+| US-05 | Browse menu | done |
 | US-06 | Admin menu CRUD | todo |
-| US-07 | Tables | todo |
+| US-07 | Tables | done |
 | US-08 | Cart and place order | todo |
 | US-09 | Customer orders | todo |
 | US-10 | Kitchen orders board | todo |
-| US-11 | Customer reservations | todo |
+| US-11 | Customer reservations | done |
 | US-12 | Staff reservations | todo |
 | US-13 | Billing | todo |
 | US-14 | Customer bills | todo |
@@ -184,18 +184,18 @@ Depends on: T03
 
 ## US-05 Browse menu
 
-**Status:** todo  
+**Status:** done  
 **As a** guest, **I want** to see available dishes **so that** I know what to order.
 
 Depends on: T01 (API), T03 (UI)
 
 ### T05 Public menu API and page
 
-**Status:** todo
+**Status:** done
 
-- [ ] T05.1 `GET /api/menu` — items with `available: true`. No auth. Fields per features.md.
-- [ ] T05.2 `/menu` — cards grouped by category; price via `format.js`.
-- [ ] T05.3 Signed in: Add to cart. Guest: link to `/sign-in`.
+- [x] T05.1 `GET /api/menu` — items with `available: true`. No auth. Fields per features.md.
+- [x] T05.2 `/menu` — cards grouped by category; price via `format.js`.
+- [x] T05.3 Signed in: Add to cart. Guest: link to `/sign-in`.
 
 **Acceptance**
 
@@ -229,18 +229,18 @@ Depends on: T02, T05
 
 ## US-07 Tables
 
-**Status:** todo  
+**Status:** done  
 **As** staff, **I want** to see and set table status **so that** the floor is accurate.
 
 Depends on: T02, T03
 
 ### T07 Tables API and dashboard
 
-**Status:** todo
+**Status:** done
 
-- [ ] T07.1 `GET /api/tables` — staff/admin (and customer session for open tables at checkout). `POST` add table — admin. `PATCH` status — staff/admin. Unique `number`. Status: `available` \| `occupied` \| `reserved`.
-- [ ] T07.2 Unique index on `tables.number` at server startup (in `index.js`, no schema file).
-- [ ] T07.3 `/dashboard/tables` — grid of `TableCard`; set available / occupy / reserve; admin add table (number, seats).
+- [x] T07.1 `GET /api/tables` — staff/admin (and customer session for open tables at checkout). `POST` add table — admin. `PATCH` status — staff/admin. Unique `number`. Status: `available` \| `occupied` \| `reserved`.
+- [x] T07.2 Unique index on `tables.number` at server startup (in `index.js`, no schema file).
+- [x] T07.3 `/dashboard/tables` — grid of `TableCard`; set available / occupy / reserve; admin add table (number, seats).
 
 **Acceptance**
 
@@ -319,17 +319,17 @@ Depends on: T08
 
 ## US-11 Customer reservations
 
-**Status:** todo  
+**Status:** done  
 **As a** customer, **I want** to book a table **so that** we have a seat later.
 
 Depends on: T02, T03
 
 ### T11 Reservation form and list
 
-**Status:** todo
+**Status:** done
 
-- [ ] T11.1 `POST /api/reservations` — customer; `guestName`, `partySize`, `datetime` required; `status: pending`; `userId` from session. `GET` own. `PATCH` cancel if `pending` or `confirmed`.
-- [ ] T11.2 `/reservations` — form + upcoming list + cancel.
+- [x] T11.1 `POST /api/reservations` — customer; `guestName`, `partySize`, `datetime` required; `status: pending`; `userId` from session. `GET` own. `PATCH` cancel if `pending` or `confirmed`.
+- [x] T11.2 `/reservations` — form + upcoming list + cancel.
 
 **Acceptance**
 
