@@ -1,5 +1,5 @@
 import PlaceholderPage from "@/components/PlaceholderPage";
 
 export default function DashboardPage() {
-  return <PlaceholderPage title="Dashboard" />;
+  return <PlaceholderPage title="Dashboard overview" />;
 }

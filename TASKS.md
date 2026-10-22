@@ -4,25 +4,75 @@ Project backlog for the restaurant app. Specs: [architecture.md](architecture.md
 
 ## How to use
 
-Tell the agent **execute T03** (or **T03.2**, or **US-03**). The agent implements that item, then updates this file:
+Tell the agent **execute T03** (or **T03.2**, **US-03**, or **Batch 2**). The agent implements that item, then updates this file:
 
 - Sub-task: `- [ ]` → `- [x]`
 - Task **Status:** `todo` → `in_progress` → `done` (only `done` if every sub-task is `[x]` and acceptance criteria hold)
 - Story **Status:** `done` when all of its tasks are `done`
-- Refresh **Progress** below
+- **Batch status:** `done` when every story (and Batch 10 checklist item) in that batch is complete; `in_progress` when any item in the batch is `in_progress` or partially done; else `todo`
+- Refresh **Batch progress** and **Progress** below
 
 Do not skip dependencies listed on the task. Do not add TypeScript, Mongoose, MVC, schema files, or extra backend folders.
 
 **Status values:** `todo` | `in_progress` | `done`
 
+## Batch progress
+
+Delivery batches group user stories for incremental releases. Finish batches in order when possible (later batches depend on earlier ones).
+
+| Batch | Theme | Stories / scope | Status |
+| --- | --- | --- | --- |
+| **1** | Foundation | US-01 (T01) | done |
+| **2** | Auth + shell | US-02 (T02), US-03 (T03), US-04 (T04) | done |
+| **3** | Menu vertical slice | US-05 (T05), US-06 (T06) | todo |
+| **4** | Tables | US-07 (T07) | todo |
+| **5** | Orders | US-08 (T08), US-09 (T09), US-10 (T10) | todo |
+| **6** | Reservations | US-11 (T11), US-12 (T12) | todo |
+| **7** | Billing | US-13 (T13), US-14 (T14) | todo |
+| **8** | Staff | US-15 (T15) | todo |
+| **9** | Dashboard overview | US-16 (T16) | todo |
+| **10** | Polish | B10 checklist (below) | todo |
+
+### Batch guide
+
+| Batch | Command examples | Delivers |
+| --- | --- | --- |
+| 1 | `execute Batch 1`, `execute US-01`, `execute T01` | Runnable Next + Express, Mongo connect, placeholders, README |
+| 2 | `execute Batch 2`, `execute US-02` | Better Auth, role gates, Navbar/Footer, `api`/`cart`/`format`, home page |
+| 3 | `execute Batch 3`, `execute US-05` | Public menu + admin menu CRUD |
+| 4 | `execute Batch 4`, `execute US-07` | Tables API + dashboard floor grid |
+| 5 | `execute Batch 5`, `execute US-08` | Cart, checkout, account orders, kitchen board |
+| 6 | `execute Batch 6`, `execute US-11` | Customer reservations + staff reservation desk |
+| 7 | `execute Batch 7`, `execute US-13` | Staff billing + customer bills |
+| 8 | `execute Batch 8`, `execute US-15` | Admin staff / role management |
+| 9 | `execute Batch 9`, `execute US-16` | Dashboard summary stats |
+| 10 | `execute Batch 10` | Ops hardening, UX consistency, repo hygiene |
+
+### Batch 10 — Polish checklist
+
+**Status:** todo
+
+- [x] B10.1 `/api/health` reflects MongoDB connectivity (not `{ ok: true }` when DB is down)
+- [ ] B10.2 Server loads `server/.env` relative to `index.js` (not only `process.cwd()`)
+- [ ] B10.3 Loading, empty, and error states consistent on all list pages
+- [ ] B10.4 Fresh clone runs: committed client bootstrap matches imports (`package.json`, `globals.css`, components, etc.)
+- [ ] B10.5 Final pass: DaisyUI theme, nav links, dashboard sidebar matches all implemented routes
+
+**Acceptance**
+
+- Health and env behavior match Bugbot/review recommendations.
+- New clone: `npm install` + `npm run dev` in `client/` and `server/` without missing files.
+
+---
+
 ## Progress
 
 | ID | Story | Status |
 | --- | --- | --- |
-| US-01 | Scaffold client and server | in_progress |
-| US-02 | Sign up, sign in, roles | todo |
-| US-03 | Shared shell (nav, API helper, cart lib) | todo |
-| US-04 | Public home | todo |
+| US-01 | Scaffold client and server | done |
+| US-02 | Sign up, sign in, roles | done |
+| US-03 | Shared shell (nav, API helper, cart lib) | done |
+| US-04 | Public home | done |
 | US-05 | Browse menu | todo |
 | US-06 | Admin menu CRUD | todo |
 | US-07 | Tables | todo |
@@ -40,19 +90,19 @@ Do not skip dependencies listed on the task. Do not add TypeScript, Mongoose, MV
 
 ## US-01 Scaffold client and server
 
-**Status:** in_progress  
+**Status:** done  
 **As a** developer, **I want** a runnable Next.js app and a one-file Express API **so that** later stories have a place to land.
 
 Depends on: nothing
 
 ### T01 Create the two apps
 
-**Status:** in_progress
+**Status:** done
 
-- [ ] T01.1 `client/` Next.js App Router, JavaScript only (`jsconfig.json`, no TypeScript). Tailwind + DaisyUI. `"js"` pages.
-- [ ] T01.2 Folder tree from architecture.md (`app/`, `components/`, `lib/`, `dashboard/` routes can be empty placeholders).
-- [ ] T01.3 `server/index.js` ESM (`"type": "module"`). Express, CORS with credentials, `MongoClient` connect, health `GET /api/health` → `{ ok: true }`. Env: `MONGODB_URI`, `DB_NAME`, `PORT`, `CLIENT_ORIGIN`.
-- [ ] T01.4 README: how to run client and server (two processes). Example `.env` files, not secrets.
+- [x] T01.1 `client/` Next.js App Router, JavaScript only (`jsconfig.json`, no TypeScript). Tailwind + DaisyUI. `"js"` pages.
+- [x] T01.2 Folder tree from architecture.md (`app/`, `components/`, `lib/`, `dashboard/` routes can be empty placeholders).
+- [x] T01.3 `server/index.js` ESM (`"type": "module"`). Express, CORS with credentials, `MongoClient` connect, health `GET /api/health` → `{ ok: true }`. Env: `MONGODB_URI`, `DB_NAME`, `PORT`, `CLIENT_ORIGIN`.
+- [x] T01.4 README: how to run client and server (two processes). Example `.env` files, not secrets.
 
 **Acceptance**
 
@@ -64,19 +114,19 @@ Depends on: nothing
 
 ## US-02 Sign up, sign in, roles
 
-**Status:** todo  
+**Status:** done  
 **As a** diner, **I want** an account with role `customer` **so that** I can order and reserve.
 
 Depends on: T01
 
 ### T02 Better Auth and role gates
 
-**Status:** todo
+**Status:** done
 
-- [ ] T02.1 Better Auth email/password in the Next app; session cookie; Express verifies the same session on mutating/dashboard routes. Default `role: "customer"` on sign-up.
-- [ ] T02.2 Pages `/sign-in`, `/sign-up`. After auth, return to the page they wanted (cart, reservations).
-- [ ] T02.3 `account/layout.js`: unauthenticated → `/sign-in`. `dashboard/layout.js`: not staff/admin → `/`.
-- [ ] T02.4 Navbar: sign in / sign out; show name when signed in.
+- [x] T02.1 Better Auth email/password in the Next app; session cookie; Express verifies the same session on mutating/dashboard routes. Default `role: "customer"` on sign-up.
+- [x] T02.2 Pages `/sign-in`, `/sign-up`. After auth, return to the page they wanted (cart, reservations).
+- [x] T02.3 `account/layout.js`: unauthenticated → `/sign-in`. `dashboard/layout.js`: not staff/admin → `/`.
+- [x] T02.4 Navbar: sign in / sign out; show name when signed in.
 
 **Acceptance**
 
@@ -89,20 +139,20 @@ Depends on: T01
 
 ## US-03 Shared shell
 
-**Status:** todo  
+**Status:** done  
 **As a** user, **I want** a consistent DaisyUI chrome and API helper **so that** pages look and fetch the same way.
 
 Depends on: T02
 
 ### T03 Nav, helpers, empty states
 
-**Status:** todo
+**Status:** done
 
-- [ ] T03.1 `Navbar.js`, `Footer.js`, `StatusBadge.js`. Root `layout.js` wraps pages.
-- [ ] T03.2 `lib/api.js` — `fetch` to Express with `credentials: "include"`; parse `{ ok, data, error }`.
-- [ ] T03.3 `lib/format.js` — cents ↔ display dollars.
-- [ ] T03.4 `lib/cart.js` — localStorage cart (add, qty, remove, clear, notes).
-- [ ] T03.5 `components/dashboard/Sidebar.js` — Overview, Orders, Tables, Reservations, Billing; Menu + Staff links only if admin.
+- [x] T03.1 `Navbar.js`, `Footer.js`, `StatusBadge.js`. Root `layout.js` wraps pages.
+- [x] T03.2 `lib/api.js` — `fetch` to Express with `credentials: "include"`; parse `{ ok, data, error }`.
+- [x] T03.3 `lib/format.js` — cents ↔ display dollars.
+- [x] T03.4 `lib/cart.js` — localStorage cart (add, qty, remove, clear, notes).
+- [x] T03.5 `components/dashboard/Sidebar.js` — Overview, Orders, Tables, Reservations, Billing; Menu + Staff links only if admin.
 
 **Acceptance**
 
@@ -114,16 +164,16 @@ Depends on: T02
 
 ## US-04 Public home
 
-**Status:** todo  
+**Status:** done  
 **As a** guest, **I want** a simple home page **so that** I can reach the menu and reservations.
 
 Depends on: T03
 
 ### T04 Home page
 
-**Status:** todo
+**Status:** done
 
-- [ ] T04.1 `/` — restaurant name, short pitch, hours, buttons to `/menu` and `/reservations`.
+- [x] T04.1 `/` — restaurant name, short pitch, hours, buttons to `/menu` and `/reservations`.
 
 **Acceptance**
 
@@ -404,4 +454,4 @@ Depends on: T07, T10, T12, T13
 - JSON: `{ ok: true, data }` or `{ ok: false, error }`.
 - Money: integer cents. Tax rate: constant in `server/index.js`.
 - Poll orders board; no sockets.
-- When a task is `done`, tick every sub-task and set Status lines + Progress table.
+- When a task is `done`, tick every sub-task and set Status lines + **Batch progress** + Progress table.

@@ -32,9 +32,17 @@ App default: `http://localhost:3000`
 
 | Variable | Where | Purpose |
 | --- | --- | --- |
-| `MONGODB_URI` | server | Mongo connection |
-| `DB_NAME` | server | Database name |
+| `MONGODB_URI` | client + server | Mongo connection (auth + API data) |
+| `DB_NAME` | client + server | Database name |
 | `PORT` | server | API port (default 4000) |
 | `CLIENT_ORIGIN` | server | CORS origin (default http://localhost:3000) |
+| `BETTER_AUTH_SECRET` | client | Session signing secret (Better Auth on Next.js) |
+| `BETTER_AUTH_URL` | client | App URL for auth (default http://localhost:3000) |
+| `NEXT_PUBLIC_APP_URL` | client | Browser origin (default http://localhost:3000) |
+| `API_ORIGIN` | client | Express URL for Next rewrites of non-auth `/api/*` (default http://localhost:4000) |
+
+Better Auth runs on **Next.js** at `/api/auth/*`. Express verifies the same session cookie on protected routes.
+
+Copy `client/.env.example` to `client/.env.local` before running the client.
 
 Do not commit `.env` files.
