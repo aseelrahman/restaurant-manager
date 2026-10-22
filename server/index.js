@@ -68,6 +68,8 @@ function isDuplicateKeyError(err) {
   return err?.code === 11000;
 }
 
+const MENU_CATEGORIES = ["starters", "mains", "drinks", "desserts"];
+
 function mapMenuItem(doc) {
   return {
     id: doc._id.toString(),
@@ -78,6 +80,61 @@ function mapMenuItem(doc) {
     available: doc.available,
     imageUrl: doc.imageUrl || null,
   };
+}
+
+function buildMenuFields(body, { partial = false } = {}) {
+  const fields = {};
+  const has = (key) =>
+    partial ? Object.prototype.hasOwnProperty.call(body, key) : true;
+
+  if (has("name")) {
+    const name = String(body?.name ?? "").trim();
+    if (!name) return { error: "Name is required" };
+    fields.name = name;
+  } else if (!partial) {
+    return { error: "Name is required" };
+  }
+
+  if (has("description")) {
+    fields.description = String(body?.description ?? "").trim();
+  } else if (!partial) {
+    fields.description = "";
+  }
+
+  if (has("price")) {
+    const price = Number(body?.price);
+    if (!Number.isInteger(price) || price < 0) {
+      return { error: "Price must be whole cents ≥ 0" };
+    }
+    fields.price = price;
+  } else if (!partial) {
+    return { error: "Price is required" };
+  }
+
+  if (has("category")) {
+    const category = String(body?.category ?? "").trim();
+    if (!MENU_CATEGORIES.includes(category)) {
+      return {
+        error: `Category must be one of: ${MENU_CATEGORIES.join(", ")}`,
+      };
+    }
+    fields.category = category;
+  } else if (!partial) {
+    return { error: "Category is required" };
+  }
+
+  if (has("available")) {
+    fields.available = Boolean(body.available);
+  } else if (!partial) {
+    fields.available = true;
+  }
+
+  if (has("imageUrl")) {
+    const imageUrl = String(body?.imageUrl ?? "").trim();
+    fields.imageUrl = imageUrl || null;
+  }
+
+  return { fields };
 }
 
 const RESERVATION_STATUSES = [
@@ -173,16 +230,28 @@ function registerRoutes() {
   );
 
   // --- MENU ---
-  app.get("/api/menu", async (_req, res) => {
+  app.get("/api/menu", async (req, res) => {
     if (!db) {
       return res
         .status(503)
         .json({ ok: false, error: "Database unavailable" });
     }
+    let filter = { available: true };
+    try {
+      const auth = await getAuth();
+      const session = await auth.api.getSession({
+        headers: fromNodeHeaders(req.headers),
+      });
+      if (session?.user?.role === "admin") {
+        filter = {};
+      }
+    } catch {
+      /* public menu only */
+    }
     try {
       const docs = await db
         .collection("menuItems")
-        .find({ available: true })
+        .find(filter)
         .sort({ category: 1, name: 1 })
         .toArray();
       res.json({ ok: true, data: docs.map(mapMenuItem) });
@@ -190,6 +259,100 @@ function registerRoutes() {
       res.status(500).json({ ok: false, error: "Failed to load menu" });
     }
   });
+
+  app.post("/api/menu", requireSession, requireAdmin, async (req, res) => {
+    if (!db) {
+      return res
+        .status(503)
+        .json({ ok: false, error: "Database unavailable" });
+    }
+    const built = buildMenuFields(req.body);
+    if (built.error) {
+      return res.status(400).json({ ok: false, error: built.error });
+    }
+    const now = new Date();
+    const doc = { ...built.fields, createdAt: now, updatedAt: now };
+    try {
+      const result = await db.collection("menuItems").insertOne(doc);
+      const inserted = await db
+        .collection("menuItems")
+        .findOne({ _id: result.insertedId });
+      res.status(201).json({ ok: true, data: mapMenuItem(inserted) });
+    } catch {
+      res.status(500).json({ ok: false, error: "Failed to create menu item" });
+    }
+  });
+
+  app.patch("/api/menu/:id", requireSession, requireAdmin, async (req, res) => {
+    if (!db) {
+      return res
+        .status(503)
+        .json({ ok: false, error: "Database unavailable" });
+    }
+    let id;
+    try {
+      id = new ObjectId(req.params.id);
+    } catch {
+      return res.status(400).json({ ok: false, error: "Invalid menu item id" });
+    }
+    const built = buildMenuFields(req.body, { partial: true });
+    if (built.error) {
+      return res.status(400).json({ ok: false, error: built.error });
+    }
+    if (Object.keys(built.fields).length === 0) {
+      return res.status(400).json({ ok: false, error: "No fields to update" });
+    }
+    built.fields.updatedAt = new Date();
+    try {
+      const result = await db
+        .collection("menuItems")
+        .findOneAndUpdate(
+          { _id: id },
+          { $set: built.fields },
+          { returnDocument: "after" }
+        );
+      if (!result) {
+        return res.status(404).json({ ok: false, error: "Menu item not found" });
+      }
+      res.json({ ok: true, data: mapMenuItem(result) });
+    } catch {
+      res.status(500).json({ ok: false, error: "Failed to update menu item" });
+    }
+  });
+
+  app.delete(
+    "/api/menu/:id",
+    requireSession,
+    requireAdmin,
+    async (req, res) => {
+      if (!db) {
+        return res
+          .status(503)
+          .json({ ok: false, error: "Database unavailable" });
+      }
+      let id;
+      try {
+        id = new ObjectId(req.params.id);
+      } catch {
+        return res
+          .status(400)
+          .json({ ok: false, error: "Invalid menu item id" });
+      }
+      try {
+        const result = await db.collection("menuItems").deleteOne({ _id: id });
+        if (result.deletedCount === 0) {
+          return res
+            .status(404)
+            .json({ ok: false, error: "Menu item not found" });
+        }
+        res.json({ ok: true, data: { id: req.params.id } });
+      } catch {
+        res
+          .status(500)
+          .json({ ok: false, error: "Failed to delete menu item" });
+      }
+    }
+  );
 
   // --- TABLES ---
   app.get("/api/tables", requireSession, async (req, res) => {

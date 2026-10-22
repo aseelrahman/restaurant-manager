@@ -1,5 +1,10 @@
-import PlaceholderPage from "@/components/PlaceholderPage";
+import AuthGate from "@/components/AuthGate";
+import MenuAdmin from "@/components/dashboard/MenuAdmin";
 
 export default function DashboardMenuPage() {
-  return <PlaceholderPage title="Menu management" />;
+  return (
+    <AuthGate callbackPath="/dashboard/menu" roles={["admin"]}>
+      <MenuAdmin />
+    </AuthGate>
+  );
 }

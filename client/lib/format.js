@@ -8,6 +8,12 @@ export function formatCents(cents) {
   });
 }
 
+export function centsToDollarInput(cents) {
+  const n = Number(cents);
+  if (!Number.isFinite(n)) return "";
+  return (n / 100).toFixed(2);
+}
+
 export function parseDollarsToCents(value) {
   const cleaned = String(value).replace(/[^0-9.]/g, "");
   const num = Number.parseFloat(cleaned);

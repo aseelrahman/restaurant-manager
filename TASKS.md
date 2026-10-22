@@ -24,7 +24,7 @@ Delivery batches group user stories for incremental releases. Finish batches in 
 | --- | --- | --- | --- |
 | **1** | Foundation | US-01 (T01) | done |
 | **2** | Auth + shell | US-02 (T02), US-03 (T03), US-04 (T04) | done |
-| **3** | Menu vertical slice | US-05 (T05), US-06 (T06) | in_progress |
+| **3** | Menu vertical slice | US-05 (T05), US-06 (T06) | done |
 | **4** | Tables | US-07 (T07) | done |
 | **5** | Orders | US-08 (T08), US-09 (T09), US-10 (T10) | todo |
 | **6** | Reservations | US-11 (T11), US-12 (T12) | in_progress |
@@ -74,7 +74,7 @@ Delivery batches group user stories for incremental releases. Finish batches in 
 | US-03 | Shared shell (nav, API helper, cart lib) | done |
 | US-04 | Public home | done |
 | US-05 | Browse menu | done |
-| US-06 | Admin menu CRUD | todo |
+| US-06 | Admin menu CRUD | done |
 | US-07 | Tables | done |
 | US-08 | Cart and place order | todo |
 | US-09 | Customer orders | todo |
@@ -207,17 +207,17 @@ Depends on: T01 (API), T03 (UI)
 
 ## US-06 Admin menu CRUD
 
-**Status:** todo  
+**Status:** done  
 **As an** admin, **I want** to add and hide dishes **so that** the public menu stays current.
 
 Depends on: T02, T05
 
 ### T06 Dashboard menu
 
-**Status:** todo
+**Status:** done
 
-- [ ] T06.1 `POST/PATCH/DELETE /api/menu` — admin only. Validate name, price (cents ≥ 0), category, available.
-- [ ] T06.2 `/dashboard/menu` — table of all items; modal create/edit; hide via `available: false`. Price input in dollars, stored as cents.
+- [x] T06.1 `POST/PATCH/DELETE /api/menu` — admin only. Validate name, price (cents ≥ 0), category, available.
+- [x] T06.2 `/dashboard/menu` — table of all items; modal create/edit; hide via `available: false`. Price input in dollars, stored as cents.
 
 **Acceptance**
 
