@@ -1,0 +1,94 @@
+# Restaurant Management System
+
+JavaScript only. Do not use TypeScript anywhere (no `.ts`, `.tsx`, `tsconfig`, type annotations, or JSDoc-as-types). Do not use Mongoose. Keep the backend simple: one Express API file.
+
+## Stack
+
+**Backend**
+- Node.js + Express
+- MongoDB via the official `mongodb` driver (`MongoClient`)
+- Single file: `server/index.js` (or `index.js` at the server root)
+- No MVC, no routers folder, no controllers/services/models layers
+- ESM only (`import` / `export`). Set `"type": "module"` in `package.json`.
+- No TypeScript, no Mongoose, no ORM, no CommonJS (`require` / `module.exports`)
+
+**Frontend**
+- Next.js (App Router) with JavaScript only (`.js` / `.jsx`)
+- Better Auth for authentication
+- Tailwind CSS + DaisyUI
+- Reasonable, polished UI: DaisyUI components, clear layout, empty/loading/error states
+
+## Project layout
+
+```
+server/index.js          # entire API
+client/                  # Next.js app
+  app/
+  components/
+  lib/auth.js            # Better Auth client/server helpers
+```
+
+Do not invent extra backend folders (`routes/`, `controllers/`, `models/`, `middleware/`). Helpers that must live in `index.js` stay inline.
+
+## Backend (`index.js`)
+
+- ESM only: `import express from "express"` and `import { MongoClient, ObjectId } from "mongodb"`. Never use `require`.
+- Connect once with `MongoClient` and reuse the db handle.
+- Collections, not Mongoose schemas. Validate required fields in the handler.
+- REST JSON API. Group handlers by domain with comments (`// --- MENU ---`).
+- Auth: verify Better Auth session (cookie/header) before mutating routes. Never trust client-sent `userId` for authorization.
+- Use `async` handlers. Return consistent JSON: `{ ok: true, data }` or `{ ok: false, error }`.
+- Env: `MONGODB_URI`, `DB_NAME`, `PORT`, Better Auth secrets. Never commit secrets.
+
+```javascript
+// ✅ GOOD — ESM + native driver in index.js
+import express from "express";
+import { MongoClient } from "mongodb";
+
+app.get("/api/menu", async (req, res) => {
+  const items = await db.collection("menuItems").find({ available: true }).toArray();
+  res.json({ ok: true, data: items });
+});
+
+// ❌ BAD — CommonJS, mongoose, routers, TypeScript
+const express = require("express");
+const item = await MenuItem.find();
+router.get("/menu", controller.list);
+```
+
+## Domain (restaurant)
+
+Typical collections: `users`, `menuItems`, `categories`, `tables`, `orders`, `orderItems`, `reservations`, `staff` (only add what the task needs).
+
+- **Menu**: name, description, price (cents or number), category, available
+- **Orders**: table/user, items, status (`pending` | `preparing` | `ready` | `served` | `paid` | `cancelled`), totals
+- **Reservations**: guest name, party size, datetime, table, status
+- **Tables**: number, seats, status (`available` | `occupied` | `reserved`)
+
+Keep payloads small. Do not over-normalize. Update order status with explicit allowed transitions.
+
+## Frontend (Next.js + DaisyUI)
+
+- JavaScript only. `"jsconfig.json"` is fine; no `"tsconfig.json"`.
+- App Router: `page.js`, `layout.js`, `route.js` as needed.
+- DaisyUI: `navbar`, `drawer` or sidebar for staff, `card`, `table`, `modal`, `btn`, `badge`, `form` controls. Theme via `data-theme`.
+- Roles: guest/customer vs staff/admin. Hide management screens from guests.
+- Pages to prefer when building features: menu, cart/order, table/reservation, kitchen/orders board, simple dashboard.
+- Fetch the Express API with credentials (`credentials: "include"`) when sessions are cookie-based.
+- Better Auth: configure in the Next app; backend trusts the same session secret/cookie. Do not roll a custom password scheme if Better Auth already covers it.
+- Accessible forms, loading skeletons, and toast/alert for API errors.
+
+```jsx
+// ✅ GOOD
+<button className="btn btn-primary" disabled={saving}>Save</button>
+
+// ❌ BAD
+<button style={{ background: "blue" }}>Save</button>
+```
+
+## General
+
+- Small, focused diffs. Match existing file style.
+- No unused dependencies. Prefer built-in APIs.
+- Do not add TypeScript, Mongoose, Redux, or extra backend frameworks.
+- When adding an endpoint, add the matching UI that uses it.
