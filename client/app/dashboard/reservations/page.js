@@ -1,5 +1,5 @@
-import PlaceholderPage from "@/components/PlaceholderPage";
+import ReservationsDesk from "@/components/dashboard/ReservationsDesk";
 
 export default function DashboardReservationsPage() {
-  return <PlaceholderPage title="Reservations" />;
+  return <ReservationsDesk />;
 }

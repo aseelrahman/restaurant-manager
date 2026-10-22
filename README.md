@@ -46,3 +46,28 @@ Better Auth runs on **Next.js** at `/api/auth/*`. Express verifies the same sess
 Copy `client/.env.example` to `client/.env.local` before running the client.
 
 Do not commit `.env` files.
+
+## Stripe (optional)
+
+Orders → served → staff **create bill** → customer **Pay with card** or staff **cash/card (manual)**.
+
+| Variable | Where | Purpose |
+| --- | --- | --- |
+| `STRIPE_SECRET_KEY` | server | Checkout Sessions + webhook verification |
+| `STRIPE_WEBHOOK_SECRET` | server | Signing secret from Stripe Dashboard or CLI |
+| `STRIPE_PUBLISHABLE_KEY` | server | Exposed via `GET /api/payments/config` |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | client | Optional; for future Stripe.js / Elements |
+| `TAX_RATE` | server | Bill tax rate (default `0.1`) |
+
+**Endpoints**
+
+- `POST /api/bills/:id/stripe/checkout` — returns `{ checkoutUrl }` (customer own bill, or staff)
+- `POST /api/webhooks/stripe` — raw body; handles `checkout.session.completed`
+
+**Local webhooks**
+
+```bash
+stripe listen --forward-to localhost:4000/api/webhooks/stripe
+```
+
+Set `STRIPE_WEBHOOK_SECRET` to the secret printed by the CLI.

@@ -1,4 +1,5 @@
 const STATUS_CLASS = {
+  awaiting_payment: "badge-warning",
   pending: "badge-warning",
   preparing: "badge-info",
   ready: "badge-primary",

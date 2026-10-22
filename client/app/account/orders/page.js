@@ -1,5 +1,5 @@
-import PlaceholderPage from "@/components/PlaceholderPage";
+import AccountOrders from "@/components/account/AccountOrders";
 
 export default function AccountOrdersPage() {
-  return <PlaceholderPage title="My orders" />;
+  return <AccountOrders />;
 }

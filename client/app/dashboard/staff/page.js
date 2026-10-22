@@ -1,5 +1,10 @@
-import PlaceholderPage from "@/components/PlaceholderPage";
+import AuthGate from "@/components/AuthGate";
+import StaffAdmin from "@/components/dashboard/StaffAdmin";
 
 export default function DashboardStaffPage() {
-  return <PlaceholderPage title="Staff" />;
+  return (
+    <AuthGate callbackPath="/dashboard/staff" roles={["admin"]}>
+      <StaffAdmin />
+    </AuthGate>
+  );
 }

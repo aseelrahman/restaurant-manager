@@ -1,5 +1,10 @@
-import PlaceholderPage from "@/components/PlaceholderPage";
+import BillingDashboard from "@/components/dashboard/BillingDashboard";
 
 export default function DashboardBillingPage() {
-  return <PlaceholderPage title="Billing" />;
+  return (
+    <>
+      <h1 className="mb-4 text-2xl font-bold">Billing</h1>
+      <BillingDashboard />
+    </>
+  );
 }

@@ -26,12 +26,12 @@ Delivery batches group user stories for incremental releases. Finish batches in 
 | **2** | Auth + shell | US-02 (T02), US-03 (T03), US-04 (T04) | done |
 | **3** | Menu vertical slice | US-05 (T05), US-06 (T06) | done |
 | **4** | Tables | US-07 (T07) | done |
-| **5** | Orders | US-08 (T08), US-09 (T09), US-10 (T10) | todo |
-| **6** | Reservations | US-11 (T11), US-12 (T12) | in_progress |
-| **7** | Billing | US-13 (T13), US-14 (T14) | todo |
-| **8** | Staff | US-15 (T15) | todo |
-| **9** | Dashboard overview | US-16 (T16) | todo |
-| **10** | Polish | B10 checklist (below) | todo |
+| **5** | Orders | US-08 (T08), US-09 (T09), US-10 (T10) | done |
+| **6** | Reservations | US-11 (T11), US-12 (T12) | done |
+| **7** | Billing | US-13 (T13), US-14 (T14) | done |
+| **8** | Staff | US-15 (T15) | done |
+| **9** | Dashboard overview | US-16 (T16) | done |
+| **10** | Polish | B10 checklist (below) | done |
 
 ### Batch guide
 
@@ -50,13 +50,13 @@ Delivery batches group user stories for incremental releases. Finish batches in 
 
 ### Batch 10 — Polish checklist
 
-**Status:** todo
+**Status:** done
 
 - [x] B10.1 `/api/health` reflects MongoDB connectivity (not `{ ok: true }` when DB is down)
-- [ ] B10.2 Server loads `server/.env` relative to `index.js` (not only `process.cwd()`)
-- [ ] B10.3 Loading, empty, and error states consistent on all list pages
-- [ ] B10.4 Fresh clone runs: committed client bootstrap matches imports (`package.json`, `globals.css`, components, etc.)
-- [ ] B10.5 Final pass: DaisyUI theme, nav links, dashboard sidebar matches all implemented routes
+- [x] B10.2 Server loads `server/.env` relative to `index.js` (not only `process.cwd()`)
+- [x] B10.3 Loading, empty, and error states consistent on all list pages
+- [x] B10.4 Fresh clone runs: committed client bootstrap matches imports (`package.json`, `globals.css`, components, etc.)
+- [x] B10.5 Final pass: DaisyUI theme, nav links, dashboard sidebar matches all implemented routes
 
 **Acceptance**
 
@@ -76,15 +76,15 @@ Delivery batches group user stories for incremental releases. Finish batches in 
 | US-05 | Browse menu | done |
 | US-06 | Admin menu CRUD | done |
 | US-07 | Tables | done |
-| US-08 | Cart and place order | todo |
-| US-09 | Customer orders | todo |
-| US-10 | Kitchen orders board | todo |
+| US-08 | Cart and place order | done |
+| US-09 | Customer orders | done |
+| US-10 | Kitchen orders board | done |
 | US-11 | Customer reservations | done |
-| US-12 | Staff reservations | todo |
-| US-13 | Billing | todo |
-| US-14 | Customer bills | todo |
-| US-15 | Staff accounts | todo |
-| US-16 | Dashboard overview | todo |
+| US-12 | Staff reservations | done |
+| US-13 | Billing | done |
+| US-14 | Customer bills | done |
+| US-15 | Staff accounts | done |
+| US-16 | Dashboard overview | done |
 
 ---
 
@@ -252,18 +252,18 @@ Depends on: T02, T03
 
 ## US-08 Cart and place order
 
-**Status:** todo  
+**Status:** done  
 **As a** customer, **I want** to submit my cart as an order **so that** the kitchen can cook it.
 
 Depends on: T05, T07
 
 ### T08 Checkout
 
-**Status:** todo
+**Status:** done
 
-- [ ] T08.1 `/cart` — lines, qty, per-line notes, remove; dine-in (`tableId` from available/open tables) or takeaway; order notes. Block empty cart and dine-in without table.
-- [ ] T08.2 `POST /api/orders` — session customer; snapshot `name`/`price`; `subtotal`; `status: pending`; `placedBy: customer`; dine-in sets table `occupied`.
-- [ ] T08.3 On success: clear cart, go to `/account/orders`.
+- [x] T08.1 `/cart` — lines, qty, per-line notes, remove; dine-in (`tableId` from available/open tables) or takeaway; order notes. Block empty cart and dine-in without table.
+- [x] T08.2 `POST /api/orders` — session customer; snapshot `name`/`price`; `subtotal`; `status: pending`; `placedBy: customer`; dine-in sets table `occupied`.
+- [x] T08.3 On success: clear cart, go to `/account/orders`.
 
 **Acceptance**
 
@@ -275,17 +275,17 @@ Depends on: T05, T07
 
 ## US-09 Customer orders
 
-**Status:** todo  
+**Status:** done  
 **As a** customer, **I want** to see my orders **so that** I know the status.
 
 Depends on: T08
 
 ### T09 Account orders
 
-**Status:** todo
+**Status:** done
 
-- [ ] T09.1 `GET /api/orders` — customer: own only. Newest first.
-- [ ] T09.2 `/account/orders` — list, `StatusBadge`, expand items; link to bill when present (may be empty until US-13).
+- [x] T09.1 `GET /api/orders` — customer: own only. Newest first.
+- [x] T09.2 `/account/orders` — list, `StatusBadge`, expand items; link to bill when present (may be empty until US-13).
 
 **Acceptance**
 
@@ -296,18 +296,18 @@ Depends on: T08
 
 ## US-10 Kitchen orders board
 
-**Status:** todo  
+**Status:** done  
 **As** staff, **I want** to move orders through the kitchen **so that** food goes out in order.
 
 Depends on: T08
 
 ### T10 Board, status, walk-in
 
-**Status:** todo
+**Status:** done
 
-- [ ] T10.1 `GET /api/orders` — staff/admin: all. `PATCH /api/orders/:id/status` — only legal transitions (`pending` → `preparing` → `ready` → `served`; cancel from `pending`/`preparing`). `paid` is **not** set here.
-- [ ] T10.2 `POST /api/orders` as staff — walk-in (`placedBy: staff`, `tableId` optional).
-- [ ] T10.3 `/dashboard/orders` — tabs/columns by status; next-status buttons only; cancel when allowed; poll ~5s. Walk-in modal.
+- [x] T10.1 `GET /api/orders` — staff/admin: all. `PATCH /api/orders/:id/status` — only legal transitions (`pending` → `preparing` → `ready` → `served`; cancel from `pending`/`preparing`). `paid` is **not** set here.
+- [x] T10.2 `POST /api/orders` as staff — walk-in (`placedBy: staff`, `tableId` optional).
+- [x] T10.3 `/dashboard/orders` — tabs/columns by status; next-status buttons only; cancel when allowed; poll ~5s. Walk-in modal.
 
 **Acceptance**
 
@@ -341,17 +341,17 @@ Depends on: T02, T03
 
 ## US-12 Staff reservations
 
-**Status:** todo  
+**Status:** done  
 **As** staff, **I want** to confirm and seat bookings **so that** the floor matches the book.
 
 Depends on: T07, T11
 
 ### T12 Dashboard reservations
 
-**Status:** todo
+**Status:** done
 
-- [ ] T12.1 Staff `GET` all; `PATCH` confirm (optional `tableId` → table `reserved`), seat (`seated`, table `occupied`), no-show, cancel (free table if reserved for this booking). Reject obvious overlap: same `tableId` already `confirmed`/`seated` at a close datetime.
-- [ ] T12.2 `/dashboard/reservations` — day filter; those actions; optional walk-in create.
+- [x] T12.1 Staff `GET` all; `PATCH` confirm (optional `tableId` → table `reserved`), seat (`seated`, table `occupied`), no-show, cancel (free table if reserved for this booking). Reject obvious overlap: same `tableId` already `confirmed`/`seated` at a close datetime.
+- [x] T12.2 `/dashboard/reservations` — day filter; those actions; optional walk-in create.
 
 **Acceptance**
 
@@ -363,18 +363,18 @@ Depends on: T07, T11
 
 ## US-13 Billing
 
-**Status:** todo  
+**Status:** done  
 **As** staff, **I want** to take payment on a served order **so that** the table can turn.
 
 Depends on: T10, T07
 
 ### T13 Bills API and dashboard
 
-**Status:** todo
+**Status:** done
 
-- [ ] T13.1 `POST /api/bills` from served order — copy lines; tax constant in `index.js`; `total`; `unpaid`. Unique `orderId`. One bill per order.
-- [ ] T13.2 `PATCH /api/bills/:id/pay` — `cash` \| `card`; set `paid`, `paidAt`; order `paid`; dine-in table `available`. Void unpaid only.
-- [ ] T13.3 `/dashboard/billing` — served-without-bill → create; unpaid → pay/void.
+- [x] T13.1 `POST /api/bills` from served order — copy lines; tax constant in `index.js`; `total`; `unpaid`. Unique `orderId`. One bill per order.
+- [x] T13.2 `PATCH /api/bills/:id/pay` — `cash` \| `card`; set `paid`, `paidAt`; order `paid`; dine-in table `available`. Void unpaid only.
+- [x] T13.3 `/dashboard/billing` — served-without-bill → create; unpaid → pay/void.
 
 **Acceptance**
 
@@ -386,18 +386,18 @@ Depends on: T10, T07
 
 ## US-14 Customer bills
 
-**Status:** todo  
+**Status:** done  
 **As a** customer, **I want** to see my bills **so that** I know what I owe or paid.
 
 Depends on: T13
 
 ### T14 Account bills
 
-**Status:** todo
+**Status:** done
 
-- [ ] T14.1 `GET /api/bills` — customer: own only.
-- [ ] T14.2 `/account/bills` — read-only list: status, totals, method if paid. No self-pay.
-- [ ] T14.3 `/account/orders` links to the matching bill.
+- [x] T14.1 `GET /api/bills` — customer: own only.
+- [x] T14.2 `/account/bills` — read-only list: status, totals, method if paid. Stripe checkout when configured.
+- [x] T14.3 `/account/orders` links to the matching bill.
 
 **Acceptance**
 
@@ -408,17 +408,17 @@ Depends on: T13
 
 ## US-15 Staff accounts
 
-**Status:** todo  
+**Status:** done  
 **As an** admin, **I want** to set roles **so that** floor staff can use the dashboard.
 
 Depends on: T02
 
 ### T15 Staff page
 
-**Status:** todo
+**Status:** done
 
-- [ ] T15.1 `GET /api/staff` — users with role staff or admin. `PATCH` role by user id or email (`customer` \| `staff` \| `admin`). Admin only.
-- [ ] T15.2 `/dashboard/staff` — list; promote by email; change role. Staff users do not see this nav item.
+- [x] T15.1 `GET /api/staff` — users with role staff or admin. `PATCH` role by user id or email (`customer` \| `staff` \| `admin`). Admin only.
+- [x] T15.2 `/dashboard/staff` — list; promote by email; change role. Staff users do not see this nav item.
 
 **Acceptance**
 
@@ -430,17 +430,17 @@ Depends on: T02
 
 ## US-16 Dashboard overview
 
-**Status:** todo  
+**Status:** done  
 **As** staff, **I want** counts on one screen **so that** I see the shift at a glance.
 
 Depends on: T07, T10, T12, T13
 
 ### T16 Overview stats
 
-**Status:** todo
+**Status:** done
 
-- [ ] T16.1 `GET /api/dashboard/summary` or equivalent counts in existing GETs: open orders (not served/paid/cancelled), occupied tables, today’s pending/confirmed reservations, unpaid bills.
-- [ ] T16.2 `/dashboard` — `StatCard`s; staff and admin.
+- [x] T16.1 `GET /api/dashboard/summary` or equivalent counts in existing GETs: open orders (not served/paid/cancelled), occupied tables, today’s pending/confirmed reservations, unpaid bills.
+- [x] T16.2 `/dashboard` — `StatCard`s; staff and admin.
 
 **Acceptance**
 

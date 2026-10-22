@@ -1,5 +1,10 @@
-import PlaceholderPage from "@/components/PlaceholderPage";
+import AccountBills from "@/components/account/AccountBills";
 
 export default function AccountBillsPage() {
-  return <PlaceholderPage title="My bills" />;
+  return (
+    <>
+      <h2 className="mb-4 text-xl font-semibold">My bills</h2>
+      <AccountBills />
+    </>
+  );
 }
